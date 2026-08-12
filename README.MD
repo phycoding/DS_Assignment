@@ -48,7 +48,7 @@ flowchart LR
 
 - Docker Desktop
 - Python 3.11
-- `pip install -r requirements.txt -r training/requirements.txt -r pipeline/requirements.txt -r serving/requirements.txt`
+- `pip install -r requirements.txt`
 
 ## Setup
 
