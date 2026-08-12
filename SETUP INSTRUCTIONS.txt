@@ -1,0 +1,32 @@
+SETUP INSTRUCTIONS
+
+1. Install Docker Desktop and make sure it's running.
+2. Save the attached files into a folder like this:
+
+   project/
+   ├── docker-compose.yml
+   ├── generate_data.py
+   ├── requirements.txt
+   └── sql/
+       └── schema.sql
+
+3. Generate the data (creates a `data/` folder with 4 CSVs):
+   pip install -r requirements.txt
+   python generate_data.py --out-dir data
+
+4. Start the database:
+   docker-compose up -d
+
+5. Load the schema and data (run each line separately):
+   docker exec -i ds_interview_postgres psql -U ds_candidate -d ecommerce -f /sql/schema.sql
+   docker exec ds_interview_postgres psql -U ds_candidate -d ecommerce -c "COPY customers FROM '/data/customers.csv' WITH (FORMAT csv, HEADER true, NULL '')"
+   docker exec ds_interview_postgres psql -U ds_candidate -d ecommerce -c "COPY products FROM '/data/products.csv' WITH (FORMAT csv, HEADER true, NULL '')"
+   docker exec ds_interview_postgres psql -U ds_candidate -d ecommerce -c "COPY orders FROM '/data/orders.csv' WITH (FORMAT csv, HEADER true, NULL '')"
+   docker exec ds_interview_postgres psql -U ds_candidate -d ecommerce -c "COPY order_items FROM '/data/order_items.csv' WITH (FORMAT csv, HEADER true, NULL '')"
+
+6. Verify: open http://localhost:8080 (Adminer) — System: PostgreSQL, 
+   Server: postgres, Username: ds_candidate, Password: ds_candidate_pw, 
+   Database: ecommerce
+
+Connection string for scripts/notebooks:
+   postgresql://ds_candidate:ds_candidate_pw@localhost:5432/ecommerce
