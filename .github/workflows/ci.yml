@@ -41,6 +41,8 @@ jobs:
         run: |
           docker run -d --name churn-api -p 8000:8000 \
             -e MLFLOW_TRACKING_URI=http://127.0.0.1:1 \
+            -e MLFLOW_HTTP_REQUEST_MAX_RETRIES=1 \
+            -e MLFLOW_HTTP_REQUEST_BACKOFF_FACTOR=0 \
             churn-api:ci
 
       - name: Wait for container to be healthy
