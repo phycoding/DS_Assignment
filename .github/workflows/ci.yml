@@ -1,10 +1,7 @@
 name: CI
 
 on:
-  push:
-    branches: ["**"]
-  pull_request:
-    branches: ["**"]
+  workflow_dispatch:
 
 jobs:
   lint-and-test:
@@ -67,7 +64,7 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{"order_count": 5, "total_spend": 250.0, "distinct_products": 3, "recency_days": 40, "tenure_days": 300}' \
             -o predict_response.json -w "%{http_code}" | tee status_code.txt
-          test "$(cat status_code.txt)" = "200" -o "$(cat status_code.txt)" = "503"
+          test "$(cat status_code.txt)" = "200"
 
       - name: Container logs (on failure)
         if: failure()

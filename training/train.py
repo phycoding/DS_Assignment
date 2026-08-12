@@ -12,6 +12,7 @@ Usage:
 """
 import argparse
 import os
+import shutil
 
 import matplotlib
 
@@ -41,6 +42,7 @@ LABEL_COLUMN = "churned"
 MODEL_NAME = "customer_churn_model"
 
 FEATURE_SQL_PATH = os.path.join(os.path.dirname(__file__), "..", "sql", "03_feature_query_optimized.sql")
+SERVING_MODEL_DIR = os.path.join(os.path.dirname(__file__), "..", "serving", "model")
 
 
 def load_feature_table(db_url: str) -> pd.DataFrame:
@@ -100,7 +102,7 @@ def train_and_log(name, estimator, params, X_train, X_test, y_train, y_test):
 
         mlflow.sklearn.log_model(pipeline, artifact_path="model")
         print(f"[{name}] run_id={run.info.run_id} metrics={metrics}")
-        return run.info.run_id, metrics
+        return run.info.run_id, metrics, pipeline
 
 
 def main():
@@ -123,7 +125,7 @@ def main():
     X_train, X_test, y_train, y_test = prepare_dataset(df)
 
     baseline_params = {"C": 1.0, "max_iter": 1000}
-    baseline_run_id, baseline_metrics = train_and_log(
+    baseline_run_id, baseline_metrics, baseline_pipeline = train_and_log(
         "baseline_logreg",
         LogisticRegression(C=baseline_params["C"], max_iter=baseline_params["max_iter"]),
         baseline_params,
@@ -131,7 +133,7 @@ def main():
     )
 
     improved_params = {"n_estimators": 200, "max_depth": 3, "learning_rate": 0.1}
-    improved_run_id, improved_metrics = train_and_log(
+    improved_run_id, improved_metrics, improved_pipeline = train_and_log(
         "gradient_boosting",
         GradientBoostingClassifier(
             n_estimators=improved_params["n_estimators"],
@@ -144,10 +146,10 @@ def main():
     )
 
     # Pick the best run by ROC AUC and register it
-    best_run_id, best_metrics, best_name = (
-        (improved_run_id, improved_metrics, "gradient_boosting")
+    best_run_id, best_metrics, best_name, best_pipeline = (
+        (improved_run_id, improved_metrics, "gradient_boosting", improved_pipeline)
         if improved_metrics["roc_auc"] >= baseline_metrics["roc_auc"]
-        else (baseline_run_id, baseline_metrics, "baseline_logreg")
+        else (baseline_run_id, baseline_metrics, "baseline_logreg", baseline_pipeline)
     )
     print(f"Best model: {best_name} (roc_auc={best_metrics['roc_auc']:.4f})")
 
@@ -162,6 +164,12 @@ def main():
         name=MODEL_NAME, version=mv.version, stage="Production", archive_existing_versions=True,
     )
     print(f"Registered {MODEL_NAME} v{mv.version} and promoted to Production")
+
+    # Also save the best model locally so serving/Dockerfile can bake it in as a fallback.
+    if os.path.isdir(SERVING_MODEL_DIR):
+        shutil.rmtree(SERVING_MODEL_DIR)
+    mlflow.sklearn.save_model(best_pipeline, SERVING_MODEL_DIR)
+    print(f"Saved best model to {SERVING_MODEL_DIR}")
 
 
 if __name__ == "__main__":

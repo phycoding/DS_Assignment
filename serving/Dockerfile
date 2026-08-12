@@ -7,6 +7,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY serving/app.py .
+COPY serving/model ./model
 
 ENV MLFLOW_TRACKING_URI=http://host.docker.internal:5000 \
     MODEL_NAME=customer_churn_model \
