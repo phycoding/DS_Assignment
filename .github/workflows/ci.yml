@@ -38,7 +38,10 @@ jobs:
         run: docker build -f serving/Dockerfile -t churn-api:ci .
 
       - name: Run container
-        run: docker run -d --name churn-api -p 8000:8000 churn-api:ci
+        run: |
+          docker run -d --name churn-api -p 8000:8000 \
+            -e MLFLOW_TRACKING_URI=http://127.0.0.1:1 \
+            churn-api:ci
 
       - name: Wait for container to be healthy
         run: |
