@@ -223,8 +223,9 @@ __marimo__/
 *.sqlite
 *.db
 
-# csv files
+# csv files apart from prediction_log.csv
 *.csv
+!prediction_log.csv
 
 # Mlflow
 mlruns/
