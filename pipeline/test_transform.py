@@ -1,11 +1,8 @@
 """Unit tests for the feature-engineering / validation logic (Part C, Part E)."""
-import os
-import sys
-
 import pandas as pd
 import pytest
 
-from pipeline import transform_logic, validate_logic  
+from pipeline import transform_logic, validate_logic
 
 
 def test_transform_fills_missing_values():

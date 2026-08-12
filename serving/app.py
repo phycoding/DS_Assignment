@@ -8,7 +8,6 @@ exposes /predict and /health endpoints.
 import logging
 import os
 from datetime import datetime, timezone
-from typing import Optional
 
 import mlflow
 import mlflow.pyfunc
@@ -39,11 +38,11 @@ _model_source = None
 
 
 class ChurnFeatures(BaseModel):
-    order_count: Optional[int] = Field(None, ge=0, description="Orders placed before cutoff")
-    total_spend: Optional[float] = Field(None, ge=0, description="Total historical spend")
-    distinct_products: Optional[int] = Field(None, ge=0, description="Distinct products purchased")
-    recency_days: Optional[int] = Field(None, ge=0, description="Days since last order")
-    tenure_days: Optional[int] = Field(None, ge=0, description="Days since signup")
+    order_count: int | None = Field(None, ge=0, description="Orders placed before cutoff")
+    total_spend: float | None = Field(None, ge=0, description="Total historical spend")
+    distinct_products: int | None = Field(None, ge=0, description="Distinct products purchased")
+    recency_days: int | None = Field(None, ge=0, description="Days since last order")
+    tenure_days: int | None = Field(None, ge=0, description="Days since signup")
 
 
 class PredictionResponse(BaseModel):
@@ -103,7 +102,7 @@ def predict(features: ChurnFeatures):
 
     try:
         proba = _model.predict(df)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         logger.exception("Prediction failed")
         raise HTTPException(status_code=500, detail=f"Prediction failed: {exc}") from exc
 
