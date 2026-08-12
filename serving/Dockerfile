@@ -2,13 +2,11 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# build context is the repo root so we can reuse the shared requirements.txt
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app.py .
-# Optional: a locally exported model dir used as an offline fallback if the
-# MLflow tracking server is unreachable from inside the container.
-COPY model/ ./model/
+COPY serving/app.py .
 
 ENV MLFLOW_TRACKING_URI=http://host.docker.internal:5000 \
     MODEL_NAME=customer_churn_model \

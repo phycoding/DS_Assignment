@@ -38,7 +38,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build Docker image
-        run: docker build -t churn-api:ci ./serving
+        run: docker build -f serving/Dockerfile -t churn-api:ci .
 
       - name: Run container
         run: docker run -d --name churn-api -p 8000:8000 churn-api:ci
@@ -87,6 +87,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build and tag release image
-        run: docker build -t churn-api:${{ github.sha }} ./serving
+        run: docker build -f serving/Dockerfile -t churn-api:${{ github.sha }} .
       - name: Push to registry
         run: echo "Push churn-api:${{ github.sha }} to your container registry here (e.g. docker push, or az acr login && docker push)."
